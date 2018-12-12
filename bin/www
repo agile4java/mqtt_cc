@@ -8,6 +8,67 @@ var app = require('../app');
 var debug = require('debug')('mqtt-cc:server');
 var http = require('http');
 
+// Get Me Started example from:
+// https://github.com/mcollina/mosca/wiki/Mosca-basic-usage
+
+// Step (A) Get Mosca
+const mosca = require('mosca');
+
+// Step (B) Configure pubsubsettings
+var pubsubsettings = {
+  type: 'mongo',
+  url: 'mongodb://localhost:27017/mqtt',
+  pubsubCollection: 'ascoltatori',
+  mongo: {}
+};
+
+// Step (C) pass pubsubsettings to server and start server
+var moscaSettings = {
+  port: 1883,
+  backend: pubsubsettings
+};
+var server = new mosca.Server(moscaSettings);
+server.on('ready', setup);
+
+function setup() {
+  console.log('Mosca server up and running');
+}
+
+// Sending data from mosca to clients
+var message = {
+  topic: '/frontdoor/outside/temp',
+  payload: 'Outside temp is fucking cold',
+  qos: 0,
+  retain: false
+};
+server.publish(message, function() {
+  console.log('message published');
+});
+
+// Receiving data from clients
+// fires when a message is published
+server.on('published', function(packet, client) {
+  console.log('Published', packet);
+  console.log('Client', client.id);
+});
+
+// mosca using Mosquitto
+// var pubsubsettings = {
+//   type: 'mqtt',
+//   json: false,
+//   mqtt: require('mqtt'),
+//   host: '127.0.0.1',
+//   port: 1883
+// };
+
+// mosca using Mongo with ascoltatore
+// const ascoltatore = {
+//   type: 'mongo',
+//   url: 'mongodb://localhost:27017',
+//   pubsubCollection: 'ascoltatori',
+//   mongo: {}
+// };
+
 /**
  * Get port from environment and store in Express.
  */
