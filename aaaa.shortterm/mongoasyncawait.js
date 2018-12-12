@@ -1,8 +1,4 @@
 const mongoHookup = {
-  
-  const MongoClient = require('mongodb').MongoClient;
-  const assert = require('assert');
-
   mongoConnect: async function() {
     // Connection URL
     const url = 'mongodb+srv://';
@@ -20,4 +16,4 @@ const mongoHookup = {
     }
     client.close();
   }
-}
+};

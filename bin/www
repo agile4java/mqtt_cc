@@ -3,22 +3,36 @@
 /**
  * Module dependencies.
  */
-
+require('dotenv').config();
 var app = require('../app');
 var debug = require('debug')('mqtt-cc:server');
 var http = require('http');
+const MongoClient = require('mongodb').MongoClient;
+//const mongoHook = require('./helpers/mongoHook.js');
+//const assert = require('assert');
 
-// Get Me Started example from:
-// https://github.com/mcollina/mosca/wiki/Mosca-basic-usage
+//*********************************mosca mqtt broker setup below*******
+//*********************************mosca mqtt broker setup below*******
+//*********************************mosca mqtt broker setup below*******
+// Connect to mongodb Atlas
+//const mongoClient = await mongoHook.mongoHookup().then(
+const dbDatabase = process.env.DB_DATABASE;
+const dbUser = process.env.DB_USERNAME;
+const dbPasswd = process.env.DB_PASSWORD;
+const fullUrl = `mongodb+srv://${dbUser}:${dbPasswd}@nextdaycode001-kbsxd.mongodb.net/${dbDatabase}`;
+// const client = new MongoClient(fullUrl, function(err, client) {
+//   const collection = client.db('iotdash').collection('mqtt');
+//   console.log('mongodb client connect to iotdash in Atlas cloud');
+// });
 
 // Step (A) Get Mosca
 const mosca = require('mosca');
 
 // Step (B) Configure pubsubsettings
 var pubsubsettings = {
-  type: 'mongo',
-  url: 'mongodb://localhost:27017/mqtt',
-  pubsubCollection: 'ascoltatori',
+  type: 'mongodb',
+  url: fullUrl,
+  pubsubCollection: 'mqtt',
   mongo: {}
 };
 
@@ -27,20 +41,24 @@ var moscaSettings = {
   port: 1883,
   backend: pubsubsettings
 };
+console.log('moscaSettings full URL: ' + fullUrl);
 var moscaServer = new mosca.Server(moscaSettings);
 moscaServer.on('ready', setup);
 
+// Executed when mosca server is up and running
 function setup() {
   console.log('Mosca server up and running');
 }
 
-// Sending data from mosca to clients
+// Specify a message to send as a test
 var moscaMessage = {
   topic: '/frontdoor/outside/temp',
   payload: 'Outside temp is fucking cold',
   qos: 0,
   retain: false
 };
+
+// send the test message
 moscaServer.publish(moscaMessage, function() {
   console.log('message published');
 });
@@ -48,8 +66,25 @@ moscaServer.publish(moscaMessage, function() {
 // Receiving data from clients
 // fires when a message is published
 moscaServer.on('published', function(packet, client) {
-  console.log('Published', packet);
-  console.log('Client', client.id);
+  if (packet == null) {
+    console.log('Message published but packet null!!');
+  } else {
+    console.log('Published', packet);
+  }
+  if (client == null) {
+    console.log('Client unknown');
+  } else {
+    if (client.id == null) {
+      console.log('Client id not specified');
+    } else {
+      console.log('Client', client.id);
+    }
+    if (client.name == null) {
+      console.log('Client name unknown');
+    } else {
+      console.log('Client name', client.name);
+    }
+  }
 });
 
 // mosca using Mosquitto
@@ -69,9 +104,9 @@ moscaServer.on('published', function(packet, client) {
 //   mongo: {}
 // };
 
-/**
- * Get port from environment and store in Express.
- */
+//*************End mosca broker --- Start http server setup
+//*************End mosca broker --- Start http server setup
+//*************End mosca broker --- Start http server setup
 
 var port = normalizePort(process.env.PORT || '5000');
 app.set('port', port);
@@ -147,16 +182,18 @@ function onListening() {
   console.log('Http server listening on ' + bind);
 }
 
+//*************End http server setup -- start websockets setup-***********
+//*************End http server setup -- start websockets setup-***********
+//*************End http server setup -- start websockets setup-***********
+
 // Create websockets server
 var message = '';
 var WebSocketServer = require('ws').Server;
 var wsServer = new WebSocketServer({ port: 8010 });
-if (wsServer) {
-  console.log('WebSocketServer started and listening on port 8010');
-}
+console.log('websocket server started on port 8010');
 wsServer.on('connection', function(ws) {
   ws.on('message', function(message) {
     console.log('Received from client: %s', message);
-    ws.send('Server recieved from client: ' + message);
+    ws.send('Server received from client: ' + message);
   });
 });
