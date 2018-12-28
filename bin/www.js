@@ -1,16 +1,14 @@
 // MQTT client for testing
 // mosca server in mqtt_cc project
 // this client subscribes and listens
-/**
- * Module dependencies.
- */
-require('dotenv').config();
+
+
 var app = require('../app');
 var debug = require('debug')('mqtt-cc:server');
 var http = require('http');
 const mqtt = require('mqtt');
 const client = mqtt.connect('mqtt://localhost:1883');
-
+require('dotenv').config();
 client.on('connect', function() {
   client.subscribe('/mosquitto/test');
   console.log('subscribed to /mosquitto/test');
