@@ -1,7 +1,7 @@
 const mongoHookup = {
   mongoConnect: async function() {
     // Connection URL
-    const rootURL = 'mongodb+srv://';
+    // const rootURL = 'mongodb+srv://';
     // Database Name
     const dbDatabase = process.env.DB_DATABASE;
     const dbUser = process.env.DB_USERNAME;
